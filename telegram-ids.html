@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telegram: ID чатов и тем</title>
+<style>
+  :root { --dark:#1B3459; --blue:#3977D5; --light:#E9F1FC; --muted:#4A5D7A; --border:#D5DFEE; --bg:#F5F8FD; --card:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --dark:#E6EDF7; --blue:#6EA1EE; --light:#1F2B3D; --muted:#9FB0C8; --border:#2E3B50; --bg:#121821; --card:#18202C; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--dark); font: 16px/1.55 Inter, system-ui, -apple-system, sans-serif; }
+  main { max-width: 780px; margin: 0 auto; padding: 32px 16px 64px; display: flex; flex-direction: column; gap: 20px; }
+  h1 { font-size: 26px; margin: 0; }
+  h2 { font-size: 18px; margin: 0 0 10px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  ol, ul { margin: 0; padding-left: 20px; } li { margin: 4px 0; }
+  code { background: var(--light); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+  a { color: var(--blue); }
+  label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  input { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--dark); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  button { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 0; background: var(--blue); color: #fff; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
+  button.small { padding: 6px 14px; font-size: 14px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .msg { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 14px; white-space: pre-wrap; }
+  .msg.ok { background: #E8F6EE; color: #1E6B3E; } .msg.err { background: #FCEDED; color: #591B1B; } .msg.info { background: var(--light); }
+  .table-wrap { overflow-x: auto; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td.id { font-family: ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--light); color: var(--muted); }
+  pre { background: #1B3459; color: #fff; padding: 14px; border-radius: 12px; overflow-x: auto; font-size: 14px; margin: 8px 0 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .kv { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: center; margin-top: 8px; }
+  .kv .id { font-family: ui-monospace, Menlo, monospace; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Telegram: ID чатов и тем для бота</h1>
+  <p class="muted">Узнайте ID группы, канала, темы в группе или своего личного чата, чтобы бот мог туда писать. Страница работает только у вас в браузере: токен уходит лишь на серверы Telegram, нигде не сохраняется и забывается, когда вы закрываете вкладку.</p>
+
+  <section class="card">
+    <h2>1. Подготовка</h2>
+    <ol>
+      <li>Нет бота? Создайте его у <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> командой <code>/newbot</code> — он пришлёт токен.</li>
+      <li><b>Группа:</b> добавьте бота в группу и отправьте там <code>/id</code>. Если в группе включены темы — отправьте <code>/id</code> в каждой нужной теме.</li>
+      <li><b>Канал:</b> сделайте бота администратором канала и опубликуйте в канале любое сообщение.</li>
+      <li><b>Личный чат:</b> откройте бота и нажмите «Старт» (или напишите ему что угодно).</li>
+    </ol>
+    <p class="muted" style="margin-top:8px">В группах бот видит только команды, поэтому именно <code>/id</code> с косой чертой. Telegram хранит такие сообщения около суток.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Найдите ID</h2>
+    <label for="token">Токен бота</label>
+    <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="1234567890:AA…">
+    <div class="row">
+      <button id="find">Найти чаты и темы</button>
+      <button id="unhook" class="ghost" hidden>Отключить webhook и повторить</button>
+    </div>
+    <div id="status" class="msg info" hidden></div>
+    <div id="result" hidden>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Чат</th><th>Тема</th><th>ID чата</th><th>ID темы</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="muted">Не видите нужный чат или тему? Отправьте там <code>/id</code> ещё раз и нажмите «Найти» снова.</p>
+    </div>
+  </section>
+
+  <section class="card" id="setup" hidden>
+    <h2>3. Готовые значения</h2>
+    <p class="muted">Выбрано: <b id="picked"></b></p>
+    <div class="kv">
+      <span>ID чата (<code>chat_id</code>)</span><span class="id" id="v-chat"></span><button class="ghost small" data-copy="v-chat">Копировать</button>
+      <span id="l-topic">ID темы (<code>message_thread_id</code>)</span><span class="id" id="v-topic"></span><button class="ghost small" id="b-topic" data-copy="v-topic">Копировать</button>
+    </div>
+    <div class="row"><button id="test">Отправить тестовое сообщение</button></div>
+    <div id="test-status" class="msg" hidden></div>
+    <p class="muted" style="margin-top:14px">Для настроек проекта (.env, переменные окружения хостинга):</p>
+    <pre id="env"></pre>
+    <div class="row"><button class="ghost small" data-copy="env">Копировать всё</button></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var found = {};   // chatId -> { title, kind, forum, topics: { id: name } }
+  var picked = null;
+
+  var KIND = { group: 'группа', supergroup: 'группа', channel: 'канал', private: 'личный чат' };
+
+  var api = function (method, params) {
+    var token = $('token').value.trim();
+    return fetch('https://api.telegram.org/bot' + token + '/' + method, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params || {})
+    }).then(function (r) { return r.json(); });
+  };
+
+  var say = function (el, text, kind) { el.textContent = text; el.className = 'msg ' + kind; el.hidden = false; };
+
+  var titleOf = function (c) {
+    if (c.title) return c.title;
+    var n = [c.first_name, c.last_name].filter(Boolean).join(' ');
+    return n || (c.username ? '@' + c.username : String(c.id));
+  };
+
+  var collect = function (updates) {
+    updates.forEach(function (u) {
+      var m = u.message || u.edited_message || u.channel_post || u.edited_channel_post || u.my_chat_member;
+      if (!m || !m.chat) return;
+      var c = m.chat;
+      var e = found[c.id] || (found[c.id] = { title: titleOf(c), kind: KIND[c.type] || c.type, forum: false, topics: {} });
+      e.forum = e.forum || !!c.is_forum;
+      if (m.message_thread_id && m.is_topic_message) {
+        var name = (m.reply_to_message && m.reply_to_message.forum_topic_created && m.reply_to_message.forum_topic_created.name)
+          || (m.forum_topic_created && m.forum_topic_created.name)
+          || e.topics[m.message_thread_id] || ('Тема ' + m.message_thread_id);
+        e.topics[m.message_thread_id] = name;
+      }
+    });
+  };
+
+  var render = function () {
+    var rows = $('rows'); rows.innerHTML = '';
+    var ids = Object.keys(found);
+    ids.forEach(function (id) {
+      var g = found[id];
+      var add = function (topicName, topicId) {
+        var tr = document.createElement('tr');
+        var tdChat = document.createElement('td');
+        tdChat.textContent = g.title + ' ';
+        var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = g.kind; tdChat.appendChild(tag);
+        tr.appendChild(tdChat);
+        [topicName, id, topicId || '—'].forEach(function (v, i) {
+          var td = document.createElement('td'); td.textContent = v; if (i >= 1) td.className = 'id'; tr.appendChild(td);
+        });
+        var td = document.createElement('td');
+        var btn = document.createElement('button');
+        btn.className = 'ghost small'; btn.textContent = 'Выбрать';
+        btn.addEventListener('click', function () { pick({ chat: id, title: g.title, topic: topicId, topicName: topicName }); });
+        td.appendChild(btn); tr.appendChild(td);
+        rows.appendChild(tr);
+      };
+      add(g.forum ? 'Общий чат' : '—', '');
+      Object.keys(g.topics).forEach(function (t) { add(g.topics[t], t); });
+    });
+    $('result').hidden = !ids.length;
+  };
+
+  var pick = function (p) {
+    picked = p;
+    $('picked').textContent = p.title + (p.topic ? ' → тема «' + p.topicName + '»' : '');
+    $('v-chat').textContent = p.chat;
+    $('v-topic').textContent = p.topic || '—';
+    $('b-topic').hidden = !p.topic;
+    var lines = ['TELEGRAM_BOT_TOKEN=<ваш токен>', 'TELEGRAM_CHAT_ID=' + p.chat];
+    if (p.topic) lines.push('TELEGRAM_TOPIC_ID=' + p.topic);
+    $('env').textContent = lines.join('\n');
+    $('test-status').hidden = true;
+    $('setup').hidden = false;
+    $('setup').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  var find = function () {
+    var st = $('status');
+    if (!/^\d+:[\w-]{30,}$/.test($('token').value.trim())) { say(st, 'Похоже, токен введён не полностью. Он выглядит так: 1234567890:AAH…', 'err'); return; }
+    $('find').disabled = true; $('unhook').hidden = true;
+    say(st, 'Проверяю бота…', 'info');
+    api('getMe').then(function (me) {
+      if (!me.ok) throw new Error(me.description === 'Unauthorized' ? 'Telegram не принял токен. Скопируйте его из @BotFather ещё раз.' : me.description);
+      say(st, 'Бот @' + me.result.username + ' найден. Ищу чаты и темы…', 'info');
+      return api('getUpdates', { allowed_updates: ['message', 'edited_message', 'channel_post', 'edited_channel_post', 'my_chat_member'] }).then(function (up) {
+        if (!up.ok) {
+          if (up.error_code === 409) { $('unhook').hidden = false; throw new Error('У бота включён webhook: обновления уходят на другой сервер, а сюда не приходят. Если этот webhook нигде не нужен — нажмите «Отключить webhook и повторить». Внимание: сервис, который его использовал, перестанет получать сообщения.'); }
+          throw new Error(up.description);
+        }
+        collect(up.result);
+        render();
+        var n = Object.keys(found).length;
+        say(st, n ? 'Готово. Найдено чатов: ' + n + '. Нажмите «Выбрать» в нужной строке.' : 'Пока ничего не найдено. Проверьте шаг 1 и нажмите кнопку снова.', n ? 'ok' : 'err');
+      });
+    }).catch(function (e) { say(st, e.message || 'Не удалось связаться с Telegram.', 'err'); })
+      .finally(function () { $('find').disabled = false; });
+  };
+
+  $('find').addEventListener('click', find);
+  $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') find(); });
+  $('unhook').addEventListener('click', function () {
+    api('deleteWebhook').then(function () { $('unhook').hidden = true; find(); });
+  });
+
+  $('test').addEventListener('click', function () {
+    if (!picked) return;
+    var st = $('test-status');
+    var p = { chat_id: picked.chat, text: '✅ Тест: бот может писать сюда.' };
+    if (picked.topic) p.message_thread_id = Number(picked.topic);
+    $('test').disabled = true;
+    api('sendMessage', p).then(function (r) {
+      say(st, r.ok ? 'Отправлено. Проверьте чат — сообщение должно появиться там, где нужно.' : 'Ошибка: ' + r.description, r.ok ? 'ok' : 'err');
+    }).catch(function () { say(st, 'Не удалось связаться с Telegram.', 'err'); })
+      .finally(function () { $('test').disabled = false; });
+  });
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copy]'); if (!b) return;
+    var text = $(b.dataset.copy).textContent;
+    var done = function () { var t = b.textContent; b.textContent = 'Скопировано'; setTimeout(function () { b.textContent = t; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {});
+  });
+})();
+</script>
+</body>
+</html>
