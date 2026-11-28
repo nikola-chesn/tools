@@ -41,6 +41,9 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 24px; }
   .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; margin-top: 20px; }
   @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+  /* the photo stays in view while scrolling through the settings */
+  .preview { position: sticky; top: 16px; }
+  @media (max-width: 920px) { .preview { position: static; } }
 
   .drops { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 620px) { .drops { grid-template-columns: 1fr; } }
@@ -184,7 +187,7 @@
   <p class="both">Карта глубины создаётся нейросетью прямо в браузере — бесплатно, фото никуда не отправляются. Можно перетащить фото вместе с готовыми картами: страница сама разберёт, где что.</p>
 
   <div class="layout">
-    <div>
+    <div class="preview">
       <div class="viewer" id="viewer">
         <div class="empty" id="empty">
           <div class="layers"><i></i><i></i><i></i></div>
@@ -459,7 +462,10 @@
   function fitStage() {
     if (!cur) return;
     const w = cur.img.naturalWidth, h = cur.img.naturalHeight;
-    const maxW = $('viewer').clientWidth, maxH = Math.max(320, innerHeight * 0.78);
+    // when sticky, the photo + thumbnails must fit in the window
+    const sticky = getComputedStyle($('viewer').parentNode).position === 'sticky';
+    const reserve = 32 + (photos.length > 1 ? 90 : 0);
+    const maxW = $('viewer').clientWidth, maxH = Math.max(280, sticky ? innerHeight - reserve : innerHeight * 0.78);
     const k = Math.min(maxW / w, maxH / h);
     $('stage').style.width = Math.round(w * k) + 'px';
     $('stage').style.height = Math.round(h * k) + 'px';
@@ -470,7 +476,9 @@
   function renderThumbs() {
     const box = $('thumbs'); box.innerHTML = '';
     if (photos.length < 2 && !(cur && cur.state !== 'ok')) { box.hidden = photos.length < 2; }
+    const wasHidden = box.hidden;
     box.hidden = photos.length < 2;
+    if (wasHidden !== box.hidden) fitStage();
     photos.forEach((p, i) => {
       const d = document.createElement('div'); d.className = 'thumb' + (p === cur ? ' on' : '');
       const st = p.example ? 'пример' : p.state === 'ok' ? (p.depth.ai ? 'ИИ-карта' : 'своя карта') : STATE[p.state];

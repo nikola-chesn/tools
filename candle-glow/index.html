@@ -50,6 +50,9 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 24px; }
   .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
   @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+  /* the photo stays in view while scrolling through the settings */
+  .preview { position: sticky; top: 16px; }
+  @media (max-width: 920px) { .preview { position: static; } }
 
   .drop { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; border: 1px dashed var(--line-strong); border-radius: 22px; padding: 26px 20px; text-align: center; cursor: pointer; color: var(--muted); background: transparent; transition: border-color .3s, background .3s; }
   .drop .serif { font-size: 30px; line-height: 1; color: var(--ink); font-style: italic; }
@@ -152,7 +155,7 @@
 
   <div id="viewOne">
     <div class="layout" style="margin-top:20px">
-      <div>
+      <div class="preview">
         <div class="viewer" id="viewer">
           <div class="empty" id="empty"><span class="serif">Здесь зажжётся свет</span>Добавьте фото, и эффект появится здесь</div>
           <div class="stage" id="stage" hidden>
@@ -297,7 +300,9 @@
   function fitStage() {
     if (!cur) return;
     const w = cur.img.naturalWidth, h = cur.img.naturalHeight;
-    const maxW = $('viewer').clientWidth, maxH = Math.max(320, innerHeight * 0.72);
+    // when sticky, the photo + thumbnails must fit in the window
+    const sticky = getComputedStyle($('viewer').parentNode).position === 'sticky';
+    const maxW = $('viewer').clientWidth, maxH = Math.max(280, sticky ? innerHeight - 32 - 90 : innerHeight * 0.72);
     const k = Math.min(maxW / w, maxH / h);
     $('stage').style.width = Math.round(w * k) + 'px';
     $('stage').style.height = Math.round(h * k) + 'px';
