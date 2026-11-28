@@ -102,6 +102,31 @@
   .toast { position: fixed; left: 50%; top: 22px; transform: translate(-50%, -150%); opacity: 0; background: var(--cocoa); color: #f3ece2; padding: 12px 20px; border-radius: 14px; font-size: 15px; transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .3s; pointer-events: none; z-index: 10; }
   .toast.show { transform: translate(-50%, 0); opacity: 1; }
   .rec { color: #c0392b; font-weight: 500; }
+  .about { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 0 0 32px; }
+  @media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
+  .about article { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 22px 22px 20px; }
+  .about .num { font-family: Cormorant, Georgia, serif; font-style: italic; color: var(--gold); font-size: 20px; }
+  .about h3 { font-family: Cormorant, Georgia, serif; font-weight: 500; font-size: 26px; line-height: 1.05; margin: 4px 0 10px; }
+  .about p { margin: 0; font-size: 14.5px; color: var(--muted); line-height: 1.6; }
+  .about ul { margin: 0; padding-left: 18px; font-size: 14.5px; color: var(--muted); line-height: 1.6; }
+  .about li::marker { color: var(--gold); }
+  .thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 14px 2px 4px; }
+  .thumb { position: relative; flex: 0 0 auto; width: 96px; height: 72px; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--stage); opacity: .7; transition: opacity .3s, box-shadow .3s; }
+  .thumb:hover { opacity: 1; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb.on { opacity: 1; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--gold); }
+  .thumb .x { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; min-height: 0; border-radius: 50%; border: 0; background: rgba(20, 14, 11, .65); color: #f3ece2; font-size: 13px; line-height: 20px; padding: 0; cursor: pointer; }
+  .thumb .st { position: absolute; left: 5px; bottom: 4px; font-size: 10.5px; line-height: 1; padding: 4px 6px; border-radius: 999px; background: rgba(20, 14, 11, .7); color: #f3ece2; letter-spacing: .03em; }
+  .thumb .st.wait { color: var(--flame); }
+  .badge { display: inline-block; font: 500 10.5px/1 Jost, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--cocoa); background: var(--flame); padding: 4px 7px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .drop .act { margin-left: auto; display: flex; flex-direction: column; gap: 6px; }
+  .drop .act button { min-height: 32px; padding: 0 12px; font-size: 12.5px; white-space: nowrap; }
+  .busy { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(20, 14, 11, .55); color: #f3ece2; font-size: 14px; text-align: center; padding: 20px; }
+  .busy .serif { font-size: 28px; font-style: italic; }
+  .bar { width: min(260px, 70%); height: 2px; background: rgba(243, 236, 226, .2); border-radius: 2px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--flame); transition: width .2s; }
+  .bar.indef i { width: 35%; animation: indef 1.2s ease-in-out infinite; }
+  @keyframes indef { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
   footer { margin-top: 48px; text-align: center; font-size: 13px; color: var(--muted); }
   footer .serif { font-size: 18px; font-style: italic; color: var(--ink); }
 </style>
@@ -114,22 +139,49 @@
   </div>
   <div class="hero">
     <h1>Объёмное<br><em>фото</em></h1>
-    <p class="lead">Загрузите фото и его карту глубины — и снимок оживёт: ближние предметы остаются на месте, а фон плавно уходит в сторону, когда вы ведёте мышью. Всё работает в вашем браузере, файлы никуда не отправляются.</p>
+    <p class="lead">Снимок, который оживает: ведёте мышью — и фото становится объёмным, а свечи на нём мерцают. Ниже уже открыт пример; добавьте свои фото — всё работает прямо в браузере, файлы никуда не отправляются.</p>
   </div>
+
+  <section class="about">
+    <article>
+      <span class="num">01</span>
+      <h3>Глубина из одного фото</h3>
+      <p>Нейросеть Depth Anything прямо в браузере строит карту глубины: светлое — близко, тёмное — далеко. По этой карте снимок раскладывается на слои: ближние предметы стоят на месте, а фон плавно уходит в сторону вслед за мышью — фото выглядит как окно в настоящую сцену.</p>
+    </article>
+    <article>
+      <span class="num">02</span>
+      <h3>Живой свет свечей</h3>
+      <p>Огоньки на фото находятся сами и начинают жить: пламя мерцает, вокруг него мягкий тёплый ореол, а воздух над ним чуть дрожит, как от жара. Свет движется вместе со своим слоем глубины, поэтому всё выглядит цельно.</p>
+    </article>
+    <article>
+      <span class="num">03</span>
+      <h3>Где применять</h3>
+      <ul>
+        <li>первый экран сайта — вместо статичного фото;</li>
+        <li>карточки и страницы товаров;</li>
+        <li>видео для Reels и Stories — 12 секунд, зациклено без шва;</li>
+        <li>баннеры, презентации, рассылки.</li>
+      </ul>
+    </article>
+  </section>
 
   <div class="drops">
     <label class="drop" id="dropPhoto">
-      <input type="file" id="filePhoto" accept="image/*">
+      <input type="file" id="filePhoto" accept="image/*" multiple>
       <span class="pic" id="picPhoto">+</span>
-      <span><span class="serif">Фото</span><small id="namePhoto">цветной снимок</small></span>
+      <span><span class="serif">Фото</span><small id="namePhoto">одно или несколько — карта глубины создастся сама</small></span>
     </label>
     <label class="drop" id="dropDepth">
       <input type="file" id="fileDepth" accept="image/*">
       <span class="pic" id="picDepth">+</span>
-      <span><span class="serif">Карта глубины</span><small id="nameDepth">чёрно-белая: светлое — близко, тёмное — далеко</small></span>
+      <span><span class="serif">Карта глубины <span class="badge" id="aiBadge" hidden>ИИ</span></span><small id="nameDepth">необязательно: своя карта для текущего фото</small></span>
+      <span class="act" id="depthAct" hidden>
+        <button id="dlDepth" type="button">Скачать карту</button>
+        <button id="redoDepth" type="button">Создать заново</button>
+      </span>
     </label>
   </div>
-  <p class="both">Можно перетащить сразу оба файла — страница сама поймёт, где карта глубины.</p>
+  <p class="both">Карта глубины создаётся нейросетью прямо в браузере — бесплатно, фото никуда не отправляются. Можно перетащить фото вместе с готовыми картами: страница сама разберёт, где что.</p>
 
   <div class="layout">
     <div>
@@ -137,16 +189,23 @@
         <div class="empty" id="empty">
           <div class="layers"><i></i><i></i><i></i></div>
           <span class="serif">Здесь появится глубина</span>
-          Добавьте фото и карту глубины того же кадра
+          Загружаю пример…
         </div>
         <div class="stage" id="stage" hidden><canvas id="cv"></canvas></div>
         <div class="hint-over" id="hintOver" hidden>Ведите мышью по странице — сцена поворачивается вслед</div>
+        <div class="busy" id="busy" hidden>
+          <span class="serif" id="busyTitle">Строю карту глубины</span>
+          <div class="bar" id="bar"><i id="barFill"></i></div>
+          <span id="busyText"></span>
+        </div>
       </div>
+      <div class="thumbs" id="thumbs"></div>
     </div>
 
     <aside class="card">
       <div class="sec" id="secDepth">
         <h2>Глубина</h2>
+        <label class="switch"><input type="checkbox" id="autoDepth" checked> Создавать карту автоматически</label>
         <label class="switch"><input type="checkbox" id="showDepth"> Показать карту глубины</label>
         <label class="switch"><input type="checkbox" id="invert"> Карта наоборот (тёмное — близко)</label>
       </div>
@@ -159,7 +218,7 @@
         <h2>Сохранить</h2>
         <div class="row">
           <button id="png" class="primary">Кадр PNG</button>
-          <button id="rec">Видео 6 с</button>
+          <button id="rec">Видео 12 с</button>
           <button id="reset">Сбросить</button>
         </div>
         <p class="small" id="recNote">Видео снимается с плавным покачиванием камеры и зацикливается без шва.</p>
@@ -169,7 +228,7 @@
 
   <div class="card code">
     <h2>Код для своего сайта</h2>
-    <p class="small" style="margin:0 0 14px">Подключите <a href="depth-parallax.js" download>depth-parallax.js</a> и вставьте код — текущие настройки уже подставлены. Все опции — в <a href="https://github.com/nikola-chesn/tools/tree/main/depth-parallax">README</a>.</p>
+    <p class="small" style="margin:0 0 14px">Подключите <a href="depth-parallax.js" download>depth-parallax.js</a> и вставьте код — текущие настройки уже подставлены. Карту глубины сохраните кнопкой «Скачать карту» и положите рядом с фото. Все опции — в <a href="https://github.com/nikola-chesn/tools/tree/main/depth-parallax">README</a>.</p>
     <textarea id="code" readonly spellcheck="false"></textarea>
     <div class="row" style="margin-top:12px"><button id="copy" class="primary">Скопировать код</button></div>
   </div>
@@ -181,6 +240,7 @@
 <script src="depth-parallax.js"></script>
 <!-- only for finding flames automatically -->
 <script src="../candle-glow/candle-glow.js"></script>
+<script src="depth-ai.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -207,6 +267,7 @@
   const BASE = Object.fromEntries(SLIDERS.map(([k]) => [k, DepthParallax.defaults[k]]));
   const settings = Object.assign({}, BASE);
   const DIGITS = { strength: 3, smooth: 0 };
+  const VIDEO_SEC = 12, LOOP_SEC = 6; // two seamless sway loops
 
   SLIDERS.forEach(([k, label, min, max, step, sec]) => {
     const l = document.createElement('label'); l.className = 'sl';
@@ -224,12 +285,13 @@
   const fx = new DepthParallax($('cv'), Object.assign({ pixelRatio: 2 }, settings));
   if (fx.failed) toast('Ваш браузер не поддерживает WebGL — эффект не покажется');
 
-  let photo = null, depth = null, flames = [];
-  const lightKeys = ['glow', 'flicker', 'heat'];
+  // photos: { id, name, url, img, depth: { src (img|canvas), name, url, ai } | null, state: 'wait'|'busy'|'ok'|'err'|'none', flames }
+  const photos = [];
+  let cur = null, nextId = 1;
 
   function apply() {
-    const s = Object.assign({}, settings, { showDepth: $('showDepth').checked, invert: $('invert').checked });
-    s.flames = $('glowOn').checked ? flames : [];
+    const s = Object.assign({}, settings, { showDepth: $('showDepth').checked, invert: $('invert').checked && !(cur && cur.depth && cur.depth.ai) });
+    s.flames = $('glowOn').checked && cur ? cur.flames : [];
     fx.set(s);
     updateCode();
   }
@@ -238,7 +300,7 @@
     apply(); updateCount();
   }));
 
-  // ---------- files ----------
+  // ---------- reading files ----------
   // a depth map is (almost) grey: R = G = B everywhere
   function isGrey(img) {
     const c = document.createElement('canvas'); c.width = c.height = 48;
@@ -252,55 +314,151 @@
     await img.decode();
     return { name: f.name, url, img };
   }
+  const stem = n => n.replace(/\.[^.]+$/, '').toLowerCase().replace(/[-_ .]*(depth|map|глубин\S*|карт\S*|d)$/i, '').replace(/[-_ .]+$/, '');
+  const looksLikeDepth = it => /depth|глуб|карт/i.test(it.name) || isGrey(it.img);
+
   async function addFiles(list, slot) {
     const files = [...list].filter(f => f.type.startsWith('image/'));
     if (!files.length) return;
     const items = [];
-    for (const f of files.slice(0, 2)) { try { items.push(await readFile(f)); } catch (_) { toast('Не удалось открыть ' + f.name); } }
-    if (items.length === 2) {
-      // decide which one is the depth map
-      const score = it => (/depth|глуб|map|карт/i.test(it.name) ? 2 : 0) + (isGrey(it.img) ? 1 : 0);
-      items.sort((a, b) => score(a) - score(b));
-      setPhoto(items[0]); setDepth(items[1]);
-    } else if (items.length === 1) {
-      const it = items[0];
-      const s = slot || (isGrey(it.img) && photo ? 'depth' : (!photo ? 'photo' : (isGrey(it.img) ? 'depth' : 'photo')));
-      s === 'depth' ? setDepth(it) : setPhoto(it);
+    for (const f of files) { try { items.push(await readFile(f)); } catch (_) { toast('Не удалось открыть ' + f.name); } }
+    if (!items.length) return;
+
+    // one file dropped on the depth slot → depth for the current photo
+    if (slot === 'depth' && items.length === 1) {
+      if (!cur) { toast('Сначала добавьте фото'); return; }
+      setDepth(cur, { src: items[0].img, name: items[0].name, url: items[0].url, ai: false });
+      return select(cur);
     }
-    await load();
+    let maps = items.filter(looksLikeDepth), pics = items.filter(it => !maps.includes(it));
+    if (!pics.length) { // only maps: give them to the current photo
+      if (!cur) { toast('Это похоже на карту глубины — сначала добавьте фото'); return; }
+      setDepth(cur, { src: maps[0].img, name: maps[0].name, url: maps[0].url, ai: false });
+      return select(cur);
+    }
+    let first = null;
+    for (const it of pics) {
+      const p = { id: nextId++, name: it.name, url: it.url, img: it.img, depth: null, state: 'none' };
+      p.flames = typeof CandleGlow !== 'undefined' ? CandleGlow.detectSync(it.img, { sensitivity: +$('sens').value }) : [];
+      // matching map: same name + "depth", or the only map for the only photo
+      const m = maps.find(d => stem(d.name) === stem(it.name)) || (pics.length === 1 && maps.length === 1 ? maps[0] : null);
+      if (m) { setDepth(p, { src: m.img, name: m.name, url: m.url, ai: false }); maps = maps.filter(x => x !== m); }
+      else if ($('autoDepth').checked) p.state = 'wait';
+      photos.push(p); first = first || p;
+    }
+    renderThumbs();
+    select(first);
+    runQueue();
   }
   window.__addFiles = addFiles; window.__fx = fx; // for testing
 
-  function setPhoto(it) {
-    if (photo) URL.revokeObjectURL(photo.url);
-    photo = it; showPic('Photo', it);
-    flames = typeof CandleGlow !== 'undefined' ? CandleGlow.detectSync(it.img, { sensitivity: +$('sens').value }) : [];
+  // example shown on first visit (depth map made beforehand, so no model download is needed)
+  async function loadExample() {
+    const im = new Image(), dm = new Image();
+    im.src = 'example.jpg'; dm.src = 'example-depth.jpg';
+    await Promise.all([im.decode(), dm.decode()]);
+    if (photos.length) return; // the user was faster
+    const p = { id: nextId++, name: 'example.jpg', url: im.src, img: im, example: true, state: 'ok',
+      depth: { src: dm, name: 'example-depth.jpg', url: dm.src, ai: true } };
+    p.flames = typeof CandleGlow !== 'undefined' ? CandleGlow.detectSync(im, { sensitivity: +$('sens').value }) : [];
+    photos.push(p);
+    renderThumbs();
+    select(p);
   }
-  function setDepth(it) {
-    if (depth) URL.revokeObjectURL(depth.url);
-    depth = it; showPic('Depth', it);
-    if (photo && (photo.img.naturalWidth / photo.img.naturalHeight).toFixed(2) !== (it.img.naturalWidth / it.img.naturalHeight).toFixed(2)) {
-      toast('Пропорции фото и карты глубины разные — карта будет растянута');
-    }
-  }
-  function showPic(which, it) {
-    const p = $('pic' + which); p.classList.add('has'); p.innerHTML = '<img alt="">'; p.firstChild.src = it.url;
-    $('name' + which).textContent = it.name;
-    $('drop' + which).classList.add('ok');
+  loadExample().catch(() => { $('empty').lastChild.textContent = 'Добавьте фото — карта глубины создастся автоматически'; });
+
+  function setDepth(p, d) {
+    if (p.depth && p.depth.url && p.depth.url.startsWith('blob:')) URL.revokeObjectURL(p.depth.url);
+    p.depth = d; p.state = 'ok';
+    const [pw, ph] = [p.img.naturalWidth, p.img.naturalHeight];
+    const [dw, dh] = [d.src.naturalWidth || d.src.width, d.src.naturalHeight || d.src.height];
+    if (!d.ai && Math.abs(pw / ph - dw / dh) > 0.02) toast('Пропорции фото и карты разные — карта будет растянута');
   }
 
-  async function load() {
-    if (!photo) return;
+  // ---------- AI depth queue ----------
+  let running = false;
+  async function runQueue() {
+    if (running) return;
+    running = true;
+    try {
+      for (;;) {
+        // the current photo goes first
+        const p = (cur && cur.state === 'wait') ? cur : photos.find(x => x.state === 'wait');
+        if (!p) break;
+        p.state = 'busy'; renderThumbs(); if (p === cur) showBusy();
+        try {
+          const canvas = await DepthAI.estimate(p.img, { onProgress: pr => progress(p, pr) });
+          if (!photos.includes(p)) continue; // removed meanwhile
+          setDepth(p, { src: canvas, name: p.name.replace(/\.[^.]+$/, '') + '-depth.png', url: null, ai: true });
+          if (p === cur) select(p);
+        } catch (err) {
+          console.warn(err);
+          p.state = 'err';
+          if (p === cur) { hideBusy(); toast('Не получилось создать карту глубины. Проверьте интернет и попробуйте «Создать заново»'); }
+        }
+        renderThumbs();
+      }
+    } finally { running = false; }
+  }
+  function progress(p, pr) {
+    if (p !== cur) return;
+    if (pr.stage === 'download') {
+      $('busyTitle').textContent = 'Загружаю нейросеть';
+      $('bar').classList.remove('indef'); $('barFill').style.width = Math.round(pr.progress * 100) + '%';
+      $('busyText').textContent = pr.total ? `${(pr.loaded / 1e6).toFixed(0)} из ${(pr.total / 1e6).toFixed(0)} МБ · только в первый раз` : '';
+    } else {
+      $('busyTitle').textContent = 'Строю карту глубины';
+      $('bar').classList.add('indef'); $('barFill').style.width = '';
+      $('busyText').textContent = 'обычно несколько секунд';
+    }
+  }
+  function showBusy() {
+    $('busy').hidden = false; $('busyTitle').textContent = 'Строю карту глубины';
+    $('bar').classList.add('indef'); $('busyText').textContent = '';
+  }
+  const hideBusy = () => { $('busy').hidden = true; };
+
+  // ---------- showing a photo ----------
+  async function select(p) {
+    cur = p;
     $('empty').hidden = true; $('stage').hidden = false; $('hintOver').hidden = false;
     fitStage();
-    await fx.setImage(photo.img, depth ? depth.img : null);
+    $('busy').hidden = p.state !== 'busy' && p.state !== 'wait';
+    if (!$('busy').hidden) showBusy();
+    showSlots();
+    renderThumbs();
+    await fx.setImage(p.img, p.depth ? p.depth.src : null);
+    if (cur !== p) return;
     apply(); updateCount();
-    if (!depth) toast('Добавьте карту глубины — пока фото плоское');
+    if (p.state === 'wait' || p.state === 'busy') runQueue();
+  }
+
+  function showSlots() {
+    const p = cur;
+    const pic = (which, src, name) => {
+      const el = $('pic' + which);
+      if (!src) { el.classList.remove('has'); el.textContent = '+'; $('drop' + which).classList.remove('ok'); return; }
+      el.classList.add('has'); el.innerHTML = '<img alt="">'; el.firstChild.src = src;
+      $('name' + which).textContent = name; $('drop' + which).classList.add('ok');
+    };
+    pic('Photo', p.url, p.example ? 'пример — добавьте свои фото' : photos.length > 1 ? `${p.name} · всего фото: ${photos.length}` : p.name);
+    if (p.depth) {
+      if (!p.depth.url) p.depth.url = p.depth.src.toDataURL('image/png');
+      pic('Depth', p.depth.url, p.depth.ai ? 'создана нейросетью' : p.depth.name);
+      if (p.example) $('dlDepth').hidden = false;
+    } else {
+      pic('Depth', null);
+      $('nameDepth').textContent = p.state === 'busy' || p.state === 'wait' ? 'создаётся…' : p.state === 'err' ? 'не получилось — нажмите «Создать заново»' : 'необязательно: своя карта для текущего фото';
+    }
+    $('aiBadge').hidden = !(p.depth && p.depth.ai);
+    $('depthAct').hidden = !(p.depth || p.state === 'err' || p.state === 'none');
+    $('dlDepth').hidden = !p.depth;
+    $('redoDepth').hidden = !!p.example;
   }
 
   function fitStage() {
-    if (!photo) return;
-    const w = photo.img.naturalWidth, h = photo.img.naturalHeight;
+    if (!cur) return;
+    const w = cur.img.naturalWidth, h = cur.img.naturalHeight;
     const maxW = $('viewer').clientWidth, maxH = Math.max(320, innerHeight * 0.78);
     const k = Math.min(maxW / w, maxH / h);
     $('stage').style.width = Math.round(w * k) + 'px';
@@ -308,6 +466,39 @@
   }
   addEventListener('resize', fitStage);
 
+  const STATE = { wait: 'в очереди', busy: 'создаётся…', ok: '', err: 'ошибка', none: 'без карты' };
+  function renderThumbs() {
+    const box = $('thumbs'); box.innerHTML = '';
+    if (photos.length < 2 && !(cur && cur.state !== 'ok')) { box.hidden = photos.length < 2; }
+    box.hidden = photos.length < 2;
+    photos.forEach((p, i) => {
+      const d = document.createElement('div'); d.className = 'thumb' + (p === cur ? ' on' : '');
+      const st = p.example ? 'пример' : p.state === 'ok' ? (p.depth.ai ? 'ИИ-карта' : 'своя карта') : STATE[p.state];
+      d.innerHTML = `<img alt=""><span class="st${p.state === 'ok' ? '' : ' wait'}">${st}</span><button class="x" title="Убрать фото">×</button>`;
+      d.querySelector('img').src = p.url;
+      d.addEventListener('click', () => select(p));
+      d.querySelector('.x').addEventListener('click', e => { e.stopPropagation(); remove(i); });
+      box.appendChild(d);
+    });
+    if (cur) showSlots();
+  }
+  function remove(i) {
+    const [p] = photos.splice(i, 1);
+    URL.revokeObjectURL(p.url);
+    if (p.depth && p.depth.url && p.depth.url.startsWith('blob:')) URL.revokeObjectURL(p.depth.url);
+    if (p === cur) {
+      if (photos.length) return select(photos[Math.min(i, photos.length - 1)]);
+      cur = null; $('stage').hidden = true; $('hintOver').hidden = true; $('busy').hidden = true; $('empty').hidden = false;
+      ['Photo', 'Depth'].forEach(w => { $('pic' + w).classList.remove('has'); $('pic' + w).textContent = '+'; $('drop' + w).classList.remove('ok'); });
+      $('namePhoto').textContent = 'одно или несколько — карта глубины создастся сама';
+      $('nameDepth').textContent = 'необязательно: своя карта для текущего фото';
+      $('aiBadge').hidden = true; $('depthAct').hidden = true;
+      updateCount(); updateCode();
+    }
+    renderThumbs();
+  }
+
+  // ---------- slots & buttons ----------
   for (const which of ['Photo', 'Depth']) {
     const drop = $('drop' + which), slot = which.toLowerCase();
     $('file' + which).addEventListener('change', e => { addFiles(e.target.files, slot); e.target.value = ''; });
@@ -317,12 +508,31 @@
   }
   addEventListener('dragover', e => e.preventDefault());
   addEventListener('drop', e => { e.preventDefault(); addFiles(e.dataTransfer.files); });
+  // buttons inside the depth slot must not open the file dialog
+  $('depthAct').addEventListener('click', e => e.preventDefault());
+  $('dlDepth').addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!cur || !cur.depth) return;
+    const src = cur.depth.src, c = src instanceof HTMLCanvasElement ? src : (() => { const k = document.createElement('canvas'); k.width = src.naturalWidth; k.height = src.naturalHeight; k.getContext('2d').drawImage(src, 0, 0); return k; })();
+    download(c.toDataURL('image/png'), cur.name.replace(/\.[^.]+$/, '') + '-depth.png');
+  });
+  $('redoDepth').addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!cur) return;
+    if (cur.depth && cur.depth.url && cur.depth.url.startsWith('blob:')) URL.revokeObjectURL(cur.depth.url);
+    cur.depth = null; cur.state = 'wait'; select(cur);
+  });
+  $('autoDepth').addEventListener('change', () => {
+    if (!$('autoDepth').checked) return;
+    photos.forEach(p => { if (p.state === 'none') p.state = 'wait'; });
+    if (cur) select(cur);
+  });
 
-  const updateCount = () => { $('count').textContent = photo && $('glowOn').checked ? `· ${flames.length}` : ''; };
+  const updateCount = () => { $('count').textContent = cur && $('glowOn').checked ? `· ${cur.flames.length}` : ''; };
   $('sens').addEventListener('input', () => { $('v-sens').textContent = $('sens').value; });
   $('sens').addEventListener('change', () => {
-    if (!photo || typeof CandleGlow === 'undefined') return;
-    flames = CandleGlow.detectSync(photo.img, { sensitivity: +$('sens').value });
+    if (!cur || typeof CandleGlow === 'undefined') return;
+    cur.flames = CandleGlow.detectSync(cur.img, { sensitivity: +$('sens').value });
     apply(); updateCount();
   });
 
@@ -334,25 +544,25 @@
   });
 
   // ---------- export ----------
-  const baseName = () => (photo ? photo.name.replace(/\.[^.]+$/, '') : 'photo');
+  const baseName = () => (cur ? cur.name.replace(/\.[^.]+$/, '') : 'photo');
   const download = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
   const fullSize = max => {
-    const w = photo.img.naturalWidth, h = photo.img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+    const w = cur.img.naturalWidth, h = cur.img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
     return [Math.round(w * k / 2) * 2, Math.round(h * k / 2) * 2];
   };
   $('png').addEventListener('click', () => {
-    if (!photo) return toast('Сначала добавьте фото');
+    if (!cur) return toast('Сначала добавьте фото');
     fx.set({ size: fullSize(2400) });
     try { download(fx.snapshot('image/png'), baseName() + '-3d.png'); } finally { fx.set({ size: null }); }
   });
 
   let recorder = null;
   $('rec').addEventListener('click', () => {
-    if (!photo) return toast('Сначала добавьте фото');
+    if (!cur) return toast('Сначала добавьте фото');
     if (recorder) return;
     if (!window.MediaRecorder || !$('cv').captureStream) return toast('Этот браузер не умеет записывать видео');
     const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t));
-    fx.set({ size: fullSize(1920), sway: 1, swayPeriod: 6 }); fx.restart();
+    fx.set({ size: fullSize(1920), sway: 1, swayPeriod: LOOP_SEC }); fx.restart();
     const chunks = [];
     recorder = new MediaRecorder($('cv').captureStream(30), { mimeType: type, videoBitsPerSecond: 12e6 });
     recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
@@ -361,25 +571,26 @@
       const blob = new Blob(chunks, { type: recorder.mimeType });
       const ext = recorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
       download(URL.createObjectURL(blob), baseName() + '-3d.' + ext);
-      $('rec').disabled = false; $('rec').textContent = 'Видео 6 с';
+      $('rec').disabled = false; $('rec').textContent = `Видео ${VIDEO_SEC} с`;
       if (ext === 'webm') $('recNote').textContent = 'Сохранено в WebM. Для Instagram удобнее Safari — он пишет сразу MP4.';
       recorder = null;
     };
     recorder.start();
     $('rec').disabled = true;
-    let left = 6;
+    let left = VIDEO_SEC;
     $('rec').innerHTML = `<span class="rec">● ${left} с</span>`;
     const tick = setInterval(() => { left--; if (left > 0) $('rec').innerHTML = `<span class="rec">● ${left} с</span>`; else { clearInterval(tick); recorder.stop(); } }, 1000);
   });
 
   function updateCode() {
     const changed = SLIDERS.map(([k]) => k).filter(k => settings[k] !== BASE[k]);
+    const dn = cur && cur.depth ? (cur.depth.ai ? cur.name.replace(/\.[^.]+$/, '') + '-depth.png' : cur.depth.name) : 'photo-depth.png';
     const lines = [
-      `  src: '${photo ? photo.name : 'photo.jpg'}',`,
-      `  depth: '${depth ? depth.name : 'photo-depth.png'}',`,
-      ...($('invert').checked ? ['  invert: true,'] : []),
+      `  src: '${cur ? cur.name : 'photo.jpg'}',`,
+      `  depth: '${dn}',`,
+      ...($('invert').checked && !(cur && cur.depth && cur.depth.ai) ? ['  invert: true,'] : []),
       ...changed.map(k => `  ${k}: ${settings[k]},`),
-      ...($('glowOn').checked && flames.length ? [`  flames: ${JSON.stringify(flames)},`] : []),
+      ...($('glowOn').checked && cur && cur.flames.length ? [`  flames: ${JSON.stringify(cur.flames)},`] : []),
     ];
     $('code').value =
 `<!-- холст любого размера: фото заполнит его, как background-size: cover -->
