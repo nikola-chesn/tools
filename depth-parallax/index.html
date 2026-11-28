@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Объёмное фото — параллакс по карте глубины</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3ece2; --card: #faf6f0; --ink: #3a2c25; --muted: rgba(58, 44, 37, .62);
+    --line: rgba(58, 44, 37, .14); --line-strong: rgba(58, 44, 37, .32);
+    --flame: #e8b45a; --gold: #9a6a1f; --cocoa: #2a1f1a; --stage: #1a1310; --soft: #ece2d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2a1f1a; --card: #33261f; --ink: #f3ece2; --muted: rgba(243, 236, 226, .62);
+      --line: rgba(243, 236, 226, .12); --line-strong: rgba(243, 236, 226, .3);
+      --gold: #e8b45a; --soft: #3a2c25; --stage: #140e0b; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 300 16px/1.6 Jost, system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1240px; margin: 0 auto; padding: 32px max(4vw, 18px) 80px; }
+  a { color: var(--gold); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  h1, h2, .serif { font-family: Cormorant, Georgia, serif; font-weight: 500; letter-spacing: -.005em; }
+
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: clamp(28px, 5vh, 56px); }
+  .back { font-size: 14px; text-decoration: none; color: var(--muted); letter-spacing: .02em; }
+  .back:hover { color: var(--ink); }
+  .eyebrow { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); font-weight: 400; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px 60px; align-items: end; margin-bottom: 32px; }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } }
+  h1 { font-size: clamp(52px, 8vw, 104px); line-height: .95; font-weight: 400; margin: 10px 0 0; }
+  h1 em { color: var(--gold); font-style: italic; }
+  .lead { color: var(--muted); margin: 0; max-width: 46ch; font-size: 17px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 24px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; margin-top: 20px; }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+
+  .drops { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 620px) { .drops { grid-template-columns: 1fr; } }
+  .drop { position: relative; display: flex; align-items: center; gap: 16px; border: 1px dashed var(--line-strong); border-radius: 22px; padding: 18px 20px; cursor: pointer; color: var(--muted); transition: border-color .3s, background .3s; min-height: 96px; }
+  .drop:hover, .drop.over { border-color: var(--gold); background: var(--soft); }
+  .drop input { display: none; }
+  .drop .serif { display: block; font-size: 26px; line-height: 1.05; color: var(--ink); font-style: italic; }
+  .drop small { font-size: 13px; }
+  .drop .pic { width: 60px; height: 60px; border-radius: 14px; flex: none; display: grid; place-items: center; background: var(--flame); color: var(--cocoa); font-size: 24px; overflow: hidden; transition: transform .4s cubic-bezier(.16, 1, .3, 1); }
+  .drop:hover .pic:not(.has) { transform: rotate(90deg); }
+  .drop .pic.has { background: var(--stage); }
+  .drop .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .drop.ok { border-style: solid; border-color: var(--line); }
+  .both { margin: 10px 2px 0; font-size: 13px; color: var(--muted); }
+
+  .viewer { background: var(--stage); border-radius: 22px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; min-height: 440px; }
+  .stage { position: relative; max-width: 100%; touch-action: none; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .empty { color: rgba(243, 236, 226, .55); text-align: center; padding: 40px 20px; max-width: 420px; }
+  .empty .serif { display: block; font-size: 34px; font-style: italic; color: rgba(243, 236, 226, .85); margin-bottom: 8px; }
+  .layers { display: flex; justify-content: center; gap: 6px; margin: 0 auto 22px; perspective: 400px; }
+  .layers i { display: block; width: 34px; height: 46px; border-radius: 6px; border: 1px solid rgba(232, 180, 90, .55); animation: drift 4s ease-in-out infinite; }
+  .layers i:nth-child(1) { background: rgba(232, 180, 90, .08); animation-delay: -.2s; }
+  .layers i:nth-child(2) { background: rgba(232, 180, 90, .18); animation-delay: -.6s; }
+  .layers i:nth-child(3) { background: rgba(232, 180, 90, .32); animation-delay: -1s; }
+  @keyframes drift { 0%, 100% { transform: translateX(-6px) rotateY(-14deg); } 50% { transform: translateX(6px) rotateY(14deg); } }
+  @media (prefers-reduced-motion: reduce) { .layers i { animation: none; } }
+  .hint-over { position: absolute; left: 16px; bottom: 14px; right: 16px; color: rgba(243, 236, 226, .8); font-size: 13px; pointer-events: none; text-shadow: 0 1px 3px #000; letter-spacing: .02em; }
+
+  button { font: 400 14px/1 Jost, sans-serif; letter-spacing: .02em; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); min-height: 40px; padding: 0 18px; cursor: pointer; transition: background .25s, border-color .25s, color .25s; }
+  button:hover { border-color: var(--ink); }
+  button.primary { background: var(--flame); border-color: var(--flame); color: var(--cocoa); font-weight: 500; }
+  button.primary:hover { background: #dca447; border-color: #dca447; }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  aside h2 { font-size: 26px; line-height: 1; margin: 0 0 6px; }
+  aside .sec + .sec { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .count { font-family: Jost, sans-serif; font-size: 14px; color: var(--gold); font-weight: 400; vertical-align: middle; }
+  label.sl { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 0; letter-spacing: .01em; }
+  label.sl span { float: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; margin: 2px 0 0; background: transparent; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: 2px; border-radius: 2px; background: linear-gradient(var(--gold), var(--gold)) 0 / var(--p, 50%) 100% no-repeat, var(--line-strong); }
+  input[type=range]::-moz-range-track { height: 2px; background: var(--line-strong); }
+  input[type=range]::-moz-range-progress { height: 2px; background: var(--gold); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -7px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--gold); box-shadow: 0 1px 4px rgba(42, 31, 26, .18); transition: transform .2s; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--gold); }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); background: var(--flame); }
+  .switch { display: flex; align-items: center; gap: 12px; font-size: 15px; cursor: pointer; margin-top: 14px; }
+  .switch input { -webkit-appearance: none; appearance: none; width: 40px; height: 22px; border-radius: 999px; background: var(--line-strong); position: relative; margin: 0; cursor: pointer; transition: background .3s; flex: none; }
+  .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #faf6f0; transition: transform .3s cubic-bezier(.16, 1, .3, 1); }
+  .switch input:checked { background: var(--gold); }
+  .switch input:checked::after { transform: translateX(18px); }
+  .small { font-size: 13px; color: var(--muted); margin: 12px 0 0; line-height: 1.55; }
+
+  textarea { width: 100%; min-height: 210px; font: 12.5px/1.6 ui-monospace, Menlo, monospace; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--bg); color: var(--ink); resize: vertical; }
+  .code { margin-top: 20px; }
+  .code h2 { font-size: 30px; line-height: 1; margin: 0 0 10px; }
+  .toast { position: fixed; left: 50%; top: 22px; transform: translate(-50%, -150%); opacity: 0; background: var(--cocoa); color: #f3ece2; padding: 12px 20px; border-radius: 14px; font-size: 15px; transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .3s; pointer-events: none; z-index: 10; }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+  .rec { color: #c0392b; font-weight: 500; }
+  footer { margin-top: 48px; text-align: center; font-size: 13px; color: var(--muted); }
+  footer .serif { font-size: 18px; font-style: italic; color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <a class="back" href="../">← Все утилиты</a>
+    <span class="eyebrow">WebGL · карта глубины</span>
+  </div>
+  <div class="hero">
+    <h1>Объёмное<br><em>фото</em></h1>
+    <p class="lead">Загрузите фото и его карту глубины — и снимок оживёт: ближние предметы остаются на месте, а фон плавно уходит в сторону, когда вы ведёте мышью. Всё работает в вашем браузере, файлы никуда не отправляются.</p>
+  </div>
+
+  <div class="drops">
+    <label class="drop" id="dropPhoto">
+      <input type="file" id="filePhoto" accept="image/*">
+      <span class="pic" id="picPhoto">+</span>
+      <span><span class="serif">Фото</span><small id="namePhoto">цветной снимок</small></span>
+    </label>
+    <label class="drop" id="dropDepth">
+      <input type="file" id="fileDepth" accept="image/*">
+      <span class="pic" id="picDepth">+</span>
+      <span><span class="serif">Карта глубины</span><small id="nameDepth">чёрно-белая: светлое — близко, тёмное — далеко</small></span>
+    </label>
+  </div>
+  <p class="both">Можно перетащить сразу оба файла — страница сама поймёт, где карта глубины.</p>
+
+  <div class="layout">
+    <div>
+      <div class="viewer" id="viewer">
+        <div class="empty" id="empty">
+          <div class="layers"><i></i><i></i><i></i></div>
+          <span class="serif">Здесь появится глубина</span>
+          Добавьте фото и карту глубины того же кадра
+        </div>
+        <div class="stage" id="stage" hidden><canvas id="cv"></canvas></div>
+        <div class="hint-over" id="hintOver" hidden>Ведите мышью по странице — сцена поворачивается вслед</div>
+      </div>
+    </div>
+
+    <aside class="card">
+      <div class="sec" id="secDepth">
+        <h2>Глубина</h2>
+        <label class="switch"><input type="checkbox" id="showDepth"> Показать карту глубины</label>
+        <label class="switch"><input type="checkbox" id="invert"> Карта наоборот (тёмное — близко)</label>
+      </div>
+      <div class="sec" id="secLight">
+        <h2>Свет свечей <span class="count" id="count"></span></h2>
+        <label class="switch"><input type="checkbox" id="glowOn" checked> Мерцание огоньков</label>
+        <label class="sl" id="sensWrap">Чувствительность поиска огоньков <span id="v-sens"></span><input type="range" id="sens" min="0" max="1" step="0.05" value="0.3"></label>
+      </div>
+      <div class="sec">
+        <h2>Сохранить</h2>
+        <div class="row">
+          <button id="png" class="primary">Кадр PNG</button>
+          <button id="rec">Видео 6 с</button>
+          <button id="reset">Сбросить</button>
+        </div>
+        <p class="small" id="recNote">Видео снимается с плавным покачиванием камеры и зацикливается без шва.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="card code">
+    <h2>Код для своего сайта</h2>
+    <p class="small" style="margin:0 0 14px">Подключите <a href="depth-parallax.js" download>depth-parallax.js</a> и вставьте код — текущие настройки уже подставлены. Все опции — в <a href="https://github.com/nikola-chesn/tools/tree/main/depth-parallax">README</a>.</p>
+    <textarea id="code" readonly spellcheck="false"></textarea>
+    <div class="row" style="margin-top:12px"><button id="copy" class="primary">Скопировать код</button></div>
+  </div>
+
+  <footer><span class="serif">DepthParallax</span> · сделано для мастерской свечей Sparkling Lights</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="depth-parallax.js"></script>
+<!-- only for finding flames automatically -->
+<script src="../candle-glow/candle-glow.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fill = r => r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%');
+  const fillAll = () => document.querySelectorAll('input[type=range]').forEach(fill);
+  document.addEventListener('input', e => { if (e.target.type === 'range') fill(e.target); });
+
+  // [option, label, min, max, step, section]
+  const SLIDERS = [
+    ['strength', 'Сила объёма', 0, 0.15, 0.005, 'secDepth'],
+    ['focus', 'Что стоит на месте: фон ↔ передний план', 0, 1, 0.05, 'secDepth'],
+    ['vertical', 'Движение по вертикали', 0, 1.5, 0.05, 'secDepth'],
+    ['ease', 'Отклик на мышь: плавно ↔ быстро', 0.01, 0.3, 0.01, 'secDepth'],
+    ['smooth', 'Сглаживание карты, px', 0, 24, 1, 'secDepth'],
+    ['idleSway', 'Само покачивается, если мышь стоит', 0, 1, 0.05, 'secDepth'],
+    ['glow', 'Сила свечения', 0, 3, 0.05, 'secLight'],
+    ['flicker', 'Мерцание', 0, 2.5, 0.05, 'secLight'],
+    ['heat', 'Дрожание воздуха', 0, 3, 0.05, 'secLight'],
+    ['dark', 'Затемнение фото', 0, 1, 0.01, 'secLight'],
+    ['vignette', 'Тёмные края', 0, 1.3, 0.05, 'secLight'],
+    ['warm', 'Тёплый тон', 0, 1.5, 0.05, 'secLight'],
+    ['grain', 'Зерно', 0, 2, 0.05, 'secLight'],
+  ];
+  const BASE = Object.fromEntries(SLIDERS.map(([k]) => [k, DepthParallax.defaults[k]]));
+  const settings = Object.assign({}, BASE);
+  const DIGITS = { strength: 3, smooth: 0 };
+
+  SLIDERS.forEach(([k, label, min, max, step, sec]) => {
+    const l = document.createElement('label'); l.className = 'sl';
+    l.innerHTML = `${label} <span id="v-${k}"></span><input type="range" id="s-${k}" min="${min}" max="${max}" step="${step}">`;
+    $(sec).appendChild(l);
+    const inp = l.querySelector('input');
+    inp.value = settings[k];
+    inp.addEventListener('input', () => { settings[k] = +inp.value; showVal(k); apply(); });
+  });
+  const showVal = k => { const d = DIGITS[k] ?? 2; $('v-' + k).textContent = (+settings[k]).toFixed(d).replace(/\.?0+$/, '') || '0'; };
+  SLIDERS.forEach(([k]) => showVal(k));
+  $('v-sens').textContent = $('sens').value;
+  fillAll();
+
+  const fx = new DepthParallax($('cv'), Object.assign({ pixelRatio: 2 }, settings));
+  if (fx.failed) toast('Ваш браузер не поддерживает WebGL — эффект не покажется');
+
+  let photo = null, depth = null, flames = [];
+  const lightKeys = ['glow', 'flicker', 'heat'];
+
+  function apply() {
+    const s = Object.assign({}, settings, { showDepth: $('showDepth').checked, invert: $('invert').checked });
+    s.flames = $('glowOn').checked ? flames : [];
+    fx.set(s);
+    updateCode();
+  }
+  ['showDepth', 'invert', 'glowOn'].forEach(id => $(id).addEventListener('change', () => {
+    $('sensWrap').hidden = !$('glowOn').checked;
+    apply(); updateCount();
+  }));
+
+  // ---------- files ----------
+  // a depth map is (almost) grey: R = G = B everywhere
+  function isGrey(img) {
+    const c = document.createElement('canvas'); c.width = c.height = 48;
+    const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 48, 48);
+    const d = x.getImageData(0, 0, 48, 48).data; let sat = 0;
+    for (let i = 0; i < d.length; i += 4) sat += Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]);
+    return sat / (d.length / 4) < 6;
+  }
+  async function readFile(f) {
+    const url = URL.createObjectURL(f), img = new Image(); img.src = url;
+    await img.decode();
+    return { name: f.name, url, img };
+  }
+  async function addFiles(list, slot) {
+    const files = [...list].filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const items = [];
+    for (const f of files.slice(0, 2)) { try { items.push(await readFile(f)); } catch (_) { toast('Не удалось открыть ' + f.name); } }
+    if (items.length === 2) {
+      // decide which one is the depth map
+      const score = it => (/depth|глуб|map|карт/i.test(it.name) ? 2 : 0) + (isGrey(it.img) ? 1 : 0);
+      items.sort((a, b) => score(a) - score(b));
+      setPhoto(items[0]); setDepth(items[1]);
+    } else if (items.length === 1) {
+      const it = items[0];
+      const s = slot || (isGrey(it.img) && photo ? 'depth' : (!photo ? 'photo' : (isGrey(it.img) ? 'depth' : 'photo')));
+      s === 'depth' ? setDepth(it) : setPhoto(it);
+    }
+    await load();
+  }
+  window.__addFiles = addFiles; window.__fx = fx; // for testing
+
+  function setPhoto(it) {
+    if (photo) URL.revokeObjectURL(photo.url);
+    photo = it; showPic('Photo', it);
+    flames = typeof CandleGlow !== 'undefined' ? CandleGlow.detectSync(it.img, { sensitivity: +$('sens').value }) : [];
+  }
+  function setDepth(it) {
+    if (depth) URL.revokeObjectURL(depth.url);
+    depth = it; showPic('Depth', it);
+    if (photo && (photo.img.naturalWidth / photo.img.naturalHeight).toFixed(2) !== (it.img.naturalWidth / it.img.naturalHeight).toFixed(2)) {
+      toast('Пропорции фото и карты глубины разные — карта будет растянута');
+    }
+  }
+  function showPic(which, it) {
+    const p = $('pic' + which); p.classList.add('has'); p.innerHTML = '<img alt="">'; p.firstChild.src = it.url;
+    $('name' + which).textContent = it.name;
+    $('drop' + which).classList.add('ok');
+  }
+
+  async function load() {
+    if (!photo) return;
+    $('empty').hidden = true; $('stage').hidden = false; $('hintOver').hidden = false;
+    fitStage();
+    await fx.setImage(photo.img, depth ? depth.img : null);
+    apply(); updateCount();
+    if (!depth) toast('Добавьте карту глубины — пока фото плоское');
+  }
+
+  function fitStage() {
+    if (!photo) return;
+    const w = photo.img.naturalWidth, h = photo.img.naturalHeight;
+    const maxW = $('viewer').clientWidth, maxH = Math.max(320, innerHeight * 0.78);
+    const k = Math.min(maxW / w, maxH / h);
+    $('stage').style.width = Math.round(w * k) + 'px';
+    $('stage').style.height = Math.round(h * k) + 'px';
+  }
+  addEventListener('resize', fitStage);
+
+  for (const which of ['Photo', 'Depth']) {
+    const drop = $('drop' + which), slot = which.toLowerCase();
+    $('file' + which).addEventListener('change', e => { addFiles(e.target.files, slot); e.target.value = ''; });
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => { e.stopPropagation(); addFiles(e.dataTransfer.files, e.dataTransfer.files.length > 1 ? null : slot); });
+  }
+  addEventListener('dragover', e => e.preventDefault());
+  addEventListener('drop', e => { e.preventDefault(); addFiles(e.dataTransfer.files); });
+
+  const updateCount = () => { $('count').textContent = photo && $('glowOn').checked ? `· ${flames.length}` : ''; };
+  $('sens').addEventListener('input', () => { $('v-sens').textContent = $('sens').value; });
+  $('sens').addEventListener('change', () => {
+    if (!photo || typeof CandleGlow === 'undefined') return;
+    flames = CandleGlow.detectSync(photo.img, { sensitivity: +$('sens').value });
+    apply(); updateCount();
+  });
+
+  $('reset').addEventListener('click', () => {
+    Object.assign(settings, BASE);
+    SLIDERS.forEach(([k]) => { $('s-' + k).value = settings[k]; showVal(k); });
+    $('showDepth').checked = false; $('invert').checked = false;
+    fillAll(); apply();
+  });
+
+  // ---------- export ----------
+  const baseName = () => (photo ? photo.name.replace(/\.[^.]+$/, '') : 'photo');
+  const download = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  const fullSize = max => {
+    const w = photo.img.naturalWidth, h = photo.img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+    return [Math.round(w * k / 2) * 2, Math.round(h * k / 2) * 2];
+  };
+  $('png').addEventListener('click', () => {
+    if (!photo) return toast('Сначала добавьте фото');
+    fx.set({ size: fullSize(2400) });
+    try { download(fx.snapshot('image/png'), baseName() + '-3d.png'); } finally { fx.set({ size: null }); }
+  });
+
+  let recorder = null;
+  $('rec').addEventListener('click', () => {
+    if (!photo) return toast('Сначала добавьте фото');
+    if (recorder) return;
+    if (!window.MediaRecorder || !$('cv').captureStream) return toast('Этот браузер не умеет записывать видео');
+    const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t));
+    fx.set({ size: fullSize(1920), sway: 1, swayPeriod: 6 }); fx.restart();
+    const chunks = [];
+    recorder = new MediaRecorder($('cv').captureStream(30), { mimeType: type, videoBitsPerSecond: 12e6 });
+    recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+    recorder.onstop = () => {
+      fx.set({ size: null, sway: 0 });
+      const blob = new Blob(chunks, { type: recorder.mimeType });
+      const ext = recorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
+      download(URL.createObjectURL(blob), baseName() + '-3d.' + ext);
+      $('rec').disabled = false; $('rec').textContent = 'Видео 6 с';
+      if (ext === 'webm') $('recNote').textContent = 'Сохранено в WebM. Для Instagram удобнее Safari — он пишет сразу MP4.';
+      recorder = null;
+    };
+    recorder.start();
+    $('rec').disabled = true;
+    let left = 6;
+    $('rec').innerHTML = `<span class="rec">● ${left} с</span>`;
+    const tick = setInterval(() => { left--; if (left > 0) $('rec').innerHTML = `<span class="rec">● ${left} с</span>`; else { clearInterval(tick); recorder.stop(); } }, 1000);
+  });
+
+  function updateCode() {
+    const changed = SLIDERS.map(([k]) => k).filter(k => settings[k] !== BASE[k]);
+    const lines = [
+      `  src: '${photo ? photo.name : 'photo.jpg'}',`,
+      `  depth: '${depth ? depth.name : 'photo-depth.png'}',`,
+      ...($('invert').checked ? ['  invert: true,'] : []),
+      ...changed.map(k => `  ${k}: ${settings[k]},`),
+      ...($('glowOn').checked && flames.length ? [`  flames: ${JSON.stringify(flames)},`] : []),
+    ];
+    $('code').value =
+`<!-- холст любого размера: фото заполнит его, как background-size: cover -->
+<canvas id="scene" style="display:block;width:100%;height:100vh"></canvas>
+
+<script src="https://nikola-chesn.github.io/tools/depth-parallax/depth-parallax.js"><\/script>
+<script>
+new DepthParallax(document.getElementById('scene'), {
+${lines.join('\n')}
+});
+<\/script>`;
+  }
+  updateCode();
+  $('copy').addEventListener('click', () => navigator.clipboard.writeText($('code').value).then(() => toast('Код скопирован'), () => { $('code').select(); toast('Выделено — нажмите ⌘C'); }));
+
+  let tt;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2600); }
+})();
+</script>
+</body>
+</html>
